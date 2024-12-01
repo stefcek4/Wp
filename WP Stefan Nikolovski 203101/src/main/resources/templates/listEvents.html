@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Event Booking - Explore and Book Events</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        main {
+            margin: auto;
+            max-width: 900px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #4CAF50;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select, button {
+            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .event-container {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-buttons button {
+            margin-left: 5px;
+            background-color: #007BFF;
+            border: none;
+        }
+
+        .event-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-button {
+            background-color: #FF5733;
+        }
+
+        .delete-button:hover {
+            background-color: #C70039;
+        }
+    </style>
+    <script>
+        function handleAction(button, action) {
+            const url = button.getAttribute('data-url');
+            if (action === 'delete' && !confirm('Are you sure you want to delete this event?')) {
+                return; // Abort deletion if user cancels
+            }
+            window.location.href = url;
+        }
+    </script>
+</head>
+<body>
+<header>
+    <h1>Event Booking Platform</h1>
+</header>
+<main>
+    <h2>Search Events:</h2>
+    <form th:action="@{/events}" method="get">
+        <label for="searchText">Event Name:</label>
+        <input type="text" id="searchText" name="searchText" placeholder="Search event by name" />
+
+        <label for="minRating">Minimum Rating:</label>
+        <input type="number" id="minRating" name="minRating" step="0.1" min="0" max="10" placeholder="Enter rating (0-10)" />
+
+        <label for="locationId">Location:</label>
+        <select id="locationId" name="locationId">
+            <option value="">All Locations</option>
+            <option th:each="location : ${locations}"
+                    th:value="${location.id}"
+                    th:text="${location.name}"></option>
+        </select>
+
+        <button type="submit">Search</button>
+    </form>
+
+    <button type="button" onclick="window.location.href='/events/add-form'">Add New Event</button>
+    <h2>Available Events:</h2>
+    <form th:action="@{/eventBooking}" method="post">
+        <div th:each="event : ${events}" class="event-container">
+            <div class="event-details">
+                <label th:for="${event.name}">
+                    <input type="radio" th:id="${event.name}" name="eventName" th:value="${event.name}">
+                    <strong>Name:</strong> <span th:text="${event.name}"></span><br>
+                    <strong>Description:</strong> <span th:text="${event.description}"></span><br>
+                    <strong>Location:</strong> <span th:text="${event.location.name}"></span><br>
+                    <strong>Rating:</strong> <span th:text="${event.popularityScore}"></span>
+                </label>
+            </div>
+            <div class="event-buttons">
+                <button type="button" th:data-url="@{/events/edit/{eventId}(eventId=${event.id})}"
+                        onclick="handleAction(this, 'edit')">Edit</button>
+                <button type="button" th:data-url="@{/events/delete/{eventId}(eventId=${event.id})}"
+                        class="delete-button"
+                        onclick="handleAction(this, 'delete')">Delete</button>
+            </div>
+        </div>
+
+        <h2>Select Tickets:</h2>
+        <input type="number" name="numTickets" min="1" max="10" required>
+        <button type="submit">Book Event</button>
+    </form>
+</main>
+</body>
+</html>
